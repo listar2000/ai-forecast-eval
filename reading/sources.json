@@ -1,0 +1,142 @@
+[
+  {
+    "file": "01_forecastbench/forecastbench_paper.pdf",
+    "source_url": "https://arxiv.org/pdf/2409.19839",
+    "retrieved_date": "2026-11-09",
+    "bytes": 1113676,
+    "sha256": "f7df9c99194f8b8057aeb8a3410585d2b8ce890599f44e192cf3abf9eeb5f2f9"
+  },
+  {
+    "file": "01_forecastbench/forecastbench_paper.txt",
+    "source_url": "https://arxiv.org/pdf/2409.19839",
+    "retrieved_date": "2026-11-09",
+    "bytes": 128405,
+    "sha256": "7eed3fc9876239d4d8a6457af3c78a8f051b0b519a91d69b7a43ea95ec9eedd4"
+  },
+  {
+    "file": "01_forecastbench/updated_ranking_methodology.pdf",
+    "source_url": "https://www.forecastbench.org/assets/pdfs/forecastbench_updated_methodology.pdf",
+    "retrieved_date": "2026-11-09",
+    "bytes": 2017944,
+    "sha256": "5224f50cc404db982af45c62926bdb60a5bb851762f099170a7ca6d0db8d3019"
+  },
+  {
+    "file": "01_forecastbench/updated_ranking_methodology.txt",
+    "source_url": "https://www.forecastbench.org/assets/pdfs/forecastbench_updated_methodology.pdf",
+    "retrieved_date": "2026-11-09",
+    "bytes": 34910,
+    "sha256": "ba535ab1253f58dd52dc2848051ab67dc8c03ef9cd54baf716322f7beee8cb43"
+  },
+  {
+    "file": "02_futureeval/methodology_overview.md",
+    "source_url": "https://www.metaculus.com/futureeval/methodology/",
+    "retrieved_date": "2026-11-09",
+    "bytes": 8467,
+    "sha256": "e46d865ae6afd9b8be89f939aeda79cf511eb956f14c34638473dfbf319ac47a"
+  },
+  {
+    "file": "02_futureeval/model_leaderboard.md",
+    "source_url": "https://www.metaculus.com/notebooks/42076/the-futureeval-model-leaderboard/",
+    "retrieved_date": "2026-11-09",
+    "bytes": 10225,
+    "sha256": "1c2354aeeb7b67a59a9124101a301b5707d4199c299402e4cccb30884ef41cdc"
+  },
+  {
+    "file": "02_futureeval/source/futureeval-methodology-content.tsx",
+    "source_url": "https://github.com/Metaculus/metaculus/blob/8ed6582566c7187b079dd26cc6cd2141fc4b8ac6/front_end/src/app/(futureeval)/futureeval/components/futureeval-methodology-content.tsx",
+    "retrieved_date": "2026-11-09",
+    "bytes": 5153,
+    "sha256": "77964c1bc81d478bb5fbb88acb8fc953c0a0b31ee4bdd0a4972c1a8c73191758"
+  },
+  {
+    "file": "03_peer_score/scores_faq.md",
+    "source_url": "https://www.metaculus.com/help/scores-faq/",
+    "retrieved_date": "2026-11-09",
+    "bytes": 35050,
+    "sha256": "5371e179dd7ac80b82a9a55d83c6bfd9d6b7ea1be8ab6700ba8844b60990dfcd"
+  },
+  {
+    "file": "03_peer_score/source/baseline_math.tsx",
+    "source_url": "https://github.com/Metaculus/metaculus/blob/8ed6582566c7187b079dd26cc6cd2141fc4b8ac6/front_end/src/app/(main)/help/scores-faq/components/baseline_math.tsx",
+    "retrieved_date": "2026-11-09",
+    "bytes": 3390,
+    "sha256": "d7e39cfd4db124f11e52b452bcdc44b682625e64a38521e45bc24bb590da6a75"
+  },
+  {
+    "file": "03_peer_score/source/further_math.tsx",
+    "source_url": "https://github.com/Metaculus/metaculus/blob/8ed6582566c7187b079dd26cc6cd2141fc4b8ac6/front_end/src/app/(main)/help/scores-faq/components/further_math.tsx",
+    "retrieved_date": "2026-11-09",
+    "bytes": 1110,
+    "sha256": "f9647c05b786c00475948089ef6a2a10afddbcb44190a384d37d84aa24249d22"
+  },
+  {
+    "file": "03_peer_score/source/page.tsx",
+    "source_url": "https://github.com/Metaculus/metaculus/blob/8ed6582566c7187b079dd26cc6cd2141fc4b8ac6/front_end/src/app/(main)/help/scores-faq/page.tsx",
+    "retrieved_date": "2026-11-09",
+    "bytes": 50342,
+    "sha256": "496c6cc5be5b9f2874ac61866f9c72dbb723b954cfde919fa65339f2b04b6025"
+  },
+  {
+    "file": "03_peer_score/source/peer_math.tsx",
+    "source_url": "https://github.com/Metaculus/metaculus/blob/8ed6582566c7187b079dd26cc6cd2141fc4b8ac6/front_end/src/app/(main)/help/scores-faq/components/peer_math.tsx",
+    "retrieved_date": "2026-11-09",
+    "bytes": 2262,
+    "sha256": "376ce1f2cc7688ce29187928a1ae768259a0863dc70236279102a65f36bd7445"
+  },
+  {
+    "file": "03_peer_score/source/points_math.tsx",
+    "source_url": "https://github.com/Metaculus/metaculus/blob/8ed6582566c7187b079dd26cc6cd2141fc4b8ac6/front_end/src/app/(main)/help/scores-faq/components/points_math.tsx",
+    "retrieved_date": "2026-11-09",
+    "bytes": 3809,
+    "sha256": "84d7f61fae964af3f9bb2cb0e08bf15ae5dcaa9b262071c60e20ae2c7a0b2c4e"
+  },
+  {
+    "file": "03_peer_score/source/truncation_example.tsx",
+    "source_url": "https://github.com/Metaculus/metaculus/blob/8ed6582566c7187b079dd26cc6cd2141fc4b8ac6/front_end/src/app/(main)/help/scores-faq/components/truncation_example.tsx",
+    "retrieved_date": "2026-11-09",
+    "bytes": 6433,
+    "sha256": "bd4109205d81c9292e59a43945c1524cefb14f7e7b9228d950332ca86f89e6db"
+  },
+  {
+    "file": "04_irt/lost_in_benchmarks.pdf",
+    "source_url": "https://arxiv.org/pdf/2505.15055",
+    "retrieved_date": "2026-11-09",
+    "bytes": 1800508,
+    "sha256": "b40e9bb103bbb006733009653c6d865166923be0ddfa9097c9afe2c65113e264"
+  },
+  {
+    "file": "04_irt/lost_in_benchmarks.txt",
+    "source_url": "https://arxiv.org/pdf/2505.15055",
+    "retrieved_date": "2026-11-09",
+    "bytes": 56821,
+    "sha256": "29ed594850e9e1cee5758c5d3a19e40ba04c74d0451295fe6a3e1863f55fa6aa"
+  },
+  {
+    "file": "04_irt/tinybenchmarks.pdf",
+    "source_url": "https://arxiv.org/pdf/2402.14992",
+    "retrieved_date": "2026-11-09",
+    "bytes": 5430592,
+    "sha256": "f652b141ccc7250524585bfc9c9858ade0419f7f7b81e23997dd06032ea86190"
+  },
+  {
+    "file": "04_irt/tinybenchmarks.txt",
+    "source_url": "https://arxiv.org/pdf/2402.14992",
+    "retrieved_date": "2026-11-09",
+    "bytes": 67868,
+    "sha256": "357b036f7a13a96b285e1f85e4259733531e119b1805cf994d670079e4ab82bd"
+  },
+  {
+    "file": "README.md",
+    "source_url": null,
+    "retrieved_date": "2026-11-09",
+    "bytes": 4423,
+    "sha256": "083c41901599fff4422bad8a4647a5c09d0f1faf138d3b2be3f4c39040c4f531"
+  },
+  {
+    "file": "metaculus_source_revision.txt",
+    "source_url": null,
+    "retrieved_date": "2026-11-09",
+    "bytes": 41,
+    "sha256": "1c79400ee23012d9370733c0e9f79c1969aa7009e82d0a6bfc656b4780762b77"
+  }
+]

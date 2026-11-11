@@ -1,0 +1,1099 @@
+# lost in benchmarks — searchable PDF text
+
+Automatically extracted; equations and tables may be imperfect. The adjacent PDF is authoritative.
+
+## Page 1
+
+Lost in Benchmarks? Rethinking Large Language Model Benchmarking with
+Item Response Theory
+Hongli Zhou1*, Hui Huang1*, Ziqing Zhao1, Lvyuan Han1, Huicheng Wang1,
+Kehai Chen2, Muyun Yang 1†, Wei Bao 3†, Jian Dong 3†, Bing Xu 1,
+Conghui Zhu1, Hailong Cao 1, Tiejun Zhao 1
+1Faculty of Computing, Harbin Institute of Technology, Harbin, China
+2School of Computer Science and Technology, Harbin Institute of Technology, Shenzhen, China
+3China Electronics Standardization Institute, Beijing, China
+hongli.joe@stu.hit.edu.cn, yangmuyun@hit.edu.cn, {baowei, dongjian}@cesi.cn
+Abstract
+The evaluation of large language models (LLMs) via bench-
+marks is widespread, yet inconsistencies between different
+leaderboards and poor separability among top models raise
+concerns about their ability to accurately reflect authentic
+model capabilities. This paper provides a critical analysis of
+benchmark effectiveness, examining mainstream prominent
+LLM benchmarks using results from diverse models. We first
+propose Pseudo-Siamese Network for Item Response The-
+ory (PSN-IRT), an enhanced Item Response Theory frame-
+work that incorporates a rich set of item parameters within
+an IRT-grounded architecture. PSN-IRT can be utilized for
+accurate and reliable estimations of item characteristics and
+model abilities. Based on PSN-IRT, we conduct extensive
+analysis on 11 LLM benchmarks comprising 41,871 items,
+revealing significant and varied shortcomings in their mea-
+surement quality. Furthermore, we demonstrate that leverag-
+ing PSN-IRT is able to construct smaller benchmarks while
+maintaining stronger alignment with human preference.
+Code— https://github.com/Joe-Hall-Lee/PSN-IRT
+1 Introduction
+As the scale and performance of large language models
+(LLMs) continue to grow, accurately measuring their ca-
+pabilities has become increasingly important (Chang et al.
+2024; Zhou et al. 2024; Huang et al. 2025). Currently, the
+performance of LLMs is primarily evaluated through various
+benchmarks (Wang et al. 2024), which are comprehensive
+test suites consisting of carefully designed questions to as-
+sess model behavior across different tasks. However, in prac-
+tice, existing benchmarks often exhibit significant limita-
+tions, prompting consideration of their effectiveness (McIn-
+tosh et al. 2024).
+As illustrated in Figure 1, on one hand, even benchmarks
+that are designed to measure similar underlying capabili-
+ties often produce inconsistent leaderboards, leading to sub-
+stantial ranking variations for the same model (Perlitz et al.
+*These authors contributed equally.
+†Corresponding authors.
+High Inconsistency Low Separability
+Figure 1: Illustration of weak separability and ranking in-
+consistencies in LLM benchmarks1.
+2024). On the other hand, many benchmarks show weak sep-
+arability among top models, limiting the ability to under-
+stand performance differences and further model refinement.
+Given these limitations, there is a growing need for a more
+systematic analysis of LLM benchmarks.
+In this paper, we conduct a comprehensive analysis for various
+popular LLM benchmark datasets. Our experiment is based on Item
+Response Theory (IRT) (Lord, Novick, and Birnbaum 1968; Baker
+and Kim 2004), a psychometric framework widely used in educa-
+tional assessment to analyze item properties such as difficulty by
+modeling item response against examinee ability 2. However, tra-
+ditional IRT struggles with the complexity and scale of modern
+datasets, and its assumption of the normal distribution of abilities
+does not always hold.
+To advance our objective, we propose the Pseudo-Siamese Net-
+1https://opencompass.org.cn
+2In the paper, an item refers to a benchmark sample.
+arXiv:2505.15055v3  [cs.CL]  16 Jan 2026
+
+## Page 2
+
+work for IRT (PSN-IRT), a framework for comprehensive and in-
+terpretable analysis of benchmark test sets. PSN-IRT processes
+model identifiers and item identifiers through independent neu-
+ral network pathways. These pathways respectively estimate latent
+model ability and a rich set of item parameters. The estimated prop-
+erties are then integrated using an IRT-based formulation to predict
+outcome probabilities. This architectural design ensures both pow-
+erful modeling capabilities and strong theoretical interpretability.
+To validate the effectiveness of PSN-IRT, we conduct exten-
+sive experiments on evaluation results from 12 LLMs across 11
+benchmarks. Our results show that PSN-IRT outperforms previous
+approaches in both parameter estimation accuracy and reliability.
+Based on PSN-IRT, we perform in-depth analyses of these bench-
+marks using key metrics, with main findings as follows:
+1. LLM benchmarks fail to achieve simultaneous excellence
+across multiple measurements.
+2. LLM benchmarks suffer from widespread saturation and insuf-
+ficient difficulty ceilings, limiting their ability to challenge and
+accurately evaluate advanced models.
+3. LLM benchmarks exhibit data contamination in numerous
+items, compromising their reliability.
+Furthermore, we find that model rankings derived from high-
+quality datasets selected by PSN-IRT are more consistent with hu-
+man preference and offer stronger discriminability among top mod-
+els.
+Our contributions are summarized as follows:
+1. We propose PSN-IRT, a benchmark analysis framework with
+superior estimation accuracy and reliability.
+2. We use PSN-IRT for an in-depth analysis of mainstream bench-
+marks and find that current LLM benchmarks present deficien-
+cies in many aspects.
+3. We show that selecting items with PSN-IRT leads to model
+rankings that better align with human preference.
+2 Background
+2.1 Related Work
+Researchers have explored various methods to evaluate and analyze
+the quality of LLM benchmarks. Recent efforts have introduced
+quantitative metrics that operate at a holistic, dataset level. For ex-
+ample, Benchmark Agreement Testing (BAT) assesses benchmark
+reliability by comparing the consistency of model rankings across
+different leaderboards (Perlitz et al. 2024; White et al. 2025). Other
+novel metrics have also been proposed for more nuanced dataset-
+level analysis (Li et al. 2024). Delving deeper than macro-level
+comparisons, another significant line of work focuses on content-
+based analysis to ground evaluation in concrete capabilities. For
+instance, ADeLe (Zhou et al. 2025) leverages scalable cognitive
+rubrics and item demand features to build highly interpretable ca-
+pability profiles for AI systems.
+Item Response Theory (IRT) (Lord, Novick, and Birnbaum
+1968; Baker and Kim 2004) offers a psychometric framework for
+data-driven, item-level analysis. Within natural language process-
+ing (NLP), IRT has been primarily utilized to diagnose fundamen-
+tal item properties such as difficulty and discriminability (Vania
+et al. 2021; Byrd and Srivastava 2022). More recently, its principles
+have also been used to inspire methods for improving evaluation ef-
+ficiency, for instance, through optimized item selection (Maia Polo
+et al. 2024) or adaptive testing paradigms (Zhuang et al. 2025;
+Truong et al. 2025). However, due to the complexity and scale of
+modern datasets and its assumption of normally distributed abili-
+ties, the application of IRT on LLM benchmarks is still underex-
+plored (Ye et al. 2025).
+2.2 Preliminary: Item Response Theory
+Item Response Theory (IRT) (Lord, Novick, and Birnbaum 1968)
+is a psychometric framework widely used in educational and
+cognitive assessments to model the relationship between bench-
+mark items and examinee abilities. Unlike Classical Test Theory
+(CTT) (DeVellis 2006), which relies on aggregate test scores, IRT
+analyzes individual item responses as a function of a latent ability
+θ, enabling precise measurement of both item and examinee prop-
+erties.
+Central to IRT is the Item Characteristic Curve (ICC), a math-
+ematical function that describes the probability of a correct re-
+sponse,P(X= 1|θ), as a function of abilityθ. Typically logis-
+tic, the ICC visualizes how item properties influence performance,
+serving as the foundation for IRT.
+The simplest IRT model, the One-Parameter Logistic (1PL)
+model, defines the ICC as:
+P(X= 1|θ) = 11 +e−(θ−b) (1)
+wherebdenotes item difficulty. Whenθ=b, the probability of the
+examinee generating a correct response is 0.5. The 1PL assumes
+all items have equal discriminability, a simplification that may not
+hold in complex testing scenarios.
+More advanced IRT models introduce additional parameters to
+capture diverse item properties. However, traditional IRT often suf-
+fer from inaccurate parameter estimation and rely on assumptions
+like normal ability distributions, which may not align with real-
+world data (Tsutsumi, Kinoshita, and Ueno 2021).
+3 Pseudo-Siamese Network for IRT
+In this section, we propose the Pseudo-Siamese Network for IRT
+(PSN-IRT), designed to diagnose benchmark item quality by ana-
+lyzing LLM responses. Specifically, one property can be inferred
+for each model:model-ability, and four properties can be inferred
+for each benchmark item:discriminability,difficulty,guessing-rate
+andfeasibility.
+Model Architecture.The PSN-IRT architecture comprises
+two independent networks: a model network and an item network.
+The model network processes one-hot encoded LLM identifiers to
+estimatemodel-abilityθ, while the item network handles one-hot
+encoded item identifiers to produce the four IRT parameters:dis-
+criminabilitya,difficultyb,guessing-ratec, andfeasibilityd.
+Each network consists of three fully connected layers with
+ReLU activation functions, enabling efficient and stable parame-
+ter estimation. After that, these estimated properties are then pro-
+cessed by a Logistic Calculation Layer. This layer operates using
+the Four-Parameter Logistic (4PL) model, an advanced IRT formu-
+lation that extends simpler models like the 1PL to capture nuanced
+behaviors:
+P(X= 1|θ) =c+ (d−c)· 11 +e−a(θ−b) (2)
+where each parameter controls a different aspect of benchmark
+item behavior:
+• The difficultybdetermines the ability level where the probability
+changes most significantly.
+• The discriminabilityareflects an item’s power to differentiate
+between models of varying abilities.
+• The guessing-rateccaptures how likely models are to succeed
+without full understanding.
+• The feasibilitydrepresents the maximum probability that even
+highly proficient models will correctly answer the item.
+
+## Page 3
+
+difficulty
+discriminability
+guessing-rate
+feasibility
+LEH
+Fisher
+One-hot
+Cross 
+Entropy𝒄 + 𝒅 − 𝒄𝟏 + 𝒆−𝒂 𝜽−𝒃10
+0
+…
+0
+1
+0
+0
+…
+0
+ො𝑦
+…
+…
+…Item Network
+One-hot
+What is 1 plus 1?
+1 plus 1 is 2.
+𝑦 = 1
+𝑦
+LLM
+Item
+Ground Truth Label
+Stage1: Training
+IRTWhat is 1 plus 1?
+Item Parameters
+Item 
+NetworkCalculate… difficulty
+Answer… discriminability
+What is … guessing-rate
+Prove… feasibility
+Item 
+Network
+Item 
+Network
+Item 
+Network
+Item
+LEH
+Fisher information
+Benchmark Quality Measurements
+Model Ability
+Weak LLM
+Model 
+Network
+Strong LLM
+Model 
+Network
+model-ability 
+model-ability 
+Item Characteristic Curve
+Stage2: Application
+Item
+Item
+Item
+𝑱 𝜽 = − 𝟏𝑵 ෍
+𝒊=𝟏
+𝑵
+ൣ𝒚𝒊 log 𝑷𝒊 + 𝟏 − 𝒚𝒊 log 𝟏 − 𝑷𝒊
+…
+…
+…Model Network
+Figure 2: The illustration of our proposed PSN-IRT. Separate neural networks estimate model-ability (θ) and item parameters
+(a, b, c, d), which are then combined via the IRT formula to predict the probability of a correct response. After that, the networks
+can be leveraged for estimating properties for models or items, respectively.
+Notably, PSN-IRT follows standard IRT assumptions such as
+unidimensionality and monotonicity, which generally hold for
+LLM benchmarking (Kipnis et al. 2025; Truong et al. 2025).
+Training and Applications.The PSN-IRT is trained end-to-
+end using the observed binary response data in the form of (Model,
+Item, Response, Outcome), where the binary outcome indicates the
+correctness of each LLM on each benchmark item. During train-
+ing, PSN-IRT processes encoded pairs of LLM and item identi-
+fiers through their respective network pathways. For each pair, the
+PSN-IRT framework first internally estimates the specific model
+and item properties. These estimated properties are then passed to
+a Logistic Calculation Layer, with the training objective as follows:
+J(θ) =− 1N
+NX
+i=1
+[yi log(Pi) + (1−yi) log(1−P i)](3)
+whereNis the batch size. The training objective is to minimize the
+discrepancy between the model’s prediction and the observed bi-
+nary outcomes. Consequently, all learnable weights within both the
+model and item networks are updated simultaneously, concurrently
+optimizing the estimated properties for both models and bench-
+mark items.
+Upon completion of training, the two networks of PSN-IRT can
+be used for evaluating model performance and diagnosing bench-
+mark characteristics, respectively. Specifically, the model network,
+
+## Page 4
+
+by processing a model’s encoding, outputs an estimate of the
+model-abilityθ. Meanwhile, the item network, given a benchmark
+item’s encoding, outputs its four estimated psychometric parame-
+tersa, b, c, d, which can be used for an in-depth diagnosis of indi-
+vidual item characteristics and the overall benchmark quality.
+4 Efficacy of PSN-IRT
+4.1 Experimental Setup
+Datasets.To evaluate existing LLM benchmarks, we select 11
+datasets that vary in domain coverage. They serve as a basis for
+comparing different IRT-based methods and analyzing test set
+properties. An overview of the datasets is provided in Table 1.
+To construct training data, we conduct evaluations using Open-
+Compass (Contributors 2023). The evaluation results are collected
+in the form of binary outcomes, indicating whether each model
+answered each item correctly. Then, we construct a unified out-
+come matrix by aggregating item-level results across all models
+and benchmarks. We split the interactions into training, validation,
+and test sets.
+We mainly focus on currently high-performing models, includ-
+ing 360GPT2-Pro 3, DeepSeek-V3 4, Doubao-pro 5, Gemini-1.5 6,
+Hunyuan-Turbo7, Moonshot-v18, Qwen-Plus9, and Yi-Lightning10.
+However, testing only strong models might obscure differences in
+the discriminability of the test sets, as most items could be solved
+easily, thus limiting a comprehensive evaluation of test set qual-
+ity (Martínez-Plumed et al. 2019). To address this, we intention-
+ally included several relatively weaker models, including Gemma-
+2B-it (Team et al. 2024), Mistral-7B-Instruct-v0.1 (Jiang et al.
+2023), Qwen2.5-3B-Instruct (Qwen et al. 2025), and Vicuna-7B-
+v1.3 (Chiang et al. 2023).
+Baselines.We mainly compare PSN-IRT with traditional IRT
+methods, namely IRT estimated based on traditional parameter es-
+timation techniques, including Maximum Likelihood Estimation
+(MLE), Markov Chain Monte Carlo (MCMC) (Hastings 1970),
+Variational Inference (VI) (Jordan et al. 1999), and VIBO (Wu et al.
+2020). We also compare with Deep-IRT (Tsutsumi, Kinoshita, and
+Ueno 2021), which is an extension of 1PL IRT that learns item-trait
+interactions via deep networks.
+Metrics.To assess whether the learned parameters meaning-
+fully reflect corresponding properties, we use two quantitative met-
+rics:
+•Prediction accuracy: Following standard practice in educational
+testing (Eignor 2013), we assess how well a method predicts
+whether a model answers an item correctly, reporting accuracy,
+F1 score, and ROC AUC.
+•Rank stability: To evaluate the reliability of model ranking in-
+duced by each method, we split the test set into two subsets, es-
+timate model abilities separately, and compute Kendall’sτbe-
+tween the resulting rankings.
+3https://ai.360.cn/
+4https://platform.deepseek.com/
+5https://www.volcengine.com/product/doubao
+6https://ai.google.dev/
+7https://hunyuan.tencent.com/
+8https://platform.moonshot.cn/
+9https://qwen.ai/apiplatform
+10https://platform.lingyiwanwu.com/
+4.2 Main Results
+Table 2 shows the estimation accuracy and reliability of PSN-IRT
+compared to traditional IRT and Deep-IRT. Both Deep-IRT and
+PSN-IRT significantly outperform traditional IRT in prediction ac-
+curacy. Despite its simpler Logistic output layer rooted in the IRT
+formula, PSN-IRT attains prediction accuracy on par with the more
+complex Deep-IRT, and surpasses it in rank reliability.
+Given our goal to comprehensively capture diverse item charac-
+teristics, we adopt the more expressive 4PL structure for all meth-
+ods except Deep-IRT. Experiments also confirm that PSN-IRT per-
+forms best with 4PL.
+4.3 Ablation Study
+To assess whether more complex architectures offer benefits over
+our straightforward design, we conduct an ablation study. Specifi-
+cally, we compare PSN-IRT with two variants: one replaces one-
+hot inputs with semantic embeddings from Instructor (Su et al.
+2023), and the other uses a GNN (Su et al. 2022) instead of the
+MLP backbone.
+As shown in Table 3, both alternatives underperform our original
+design. We argue that semantic similarity between item texts does
+not necessarily reflect similarity in measurement characteristics.
+For the GNN variant, its neighborhood aggregation mechanism
+risks diluting the unique statistical signals of individual models
+and items, thereby hindering precise parameter estimation. These
+results suggest that in this estimation scenario, preserving the in-
+dividuality of models and items is more effective than introducing
+architectural complexity.
+Furthermore, since PSN-IRT estimates parameters that are spe-
+cific to the training data, requiring retraining to analyze new items,
+we also investigate the stability of these estimates when the item
+pool changes. To simulate this, we conduct an experiment by in-
+dependently training separate PSN-IRT models on random subsets
+of the items. We then compute the Pearson correlation between the
+item parameters estimated from these subsets and those estimated
+from the full dataset.
+As shown in Table 4, the results reveal a high degree of cor-
+relation across all parameters. This indicates that PSN-IRT learns
+highly consistent intrinsic properties for the items regardless of the
+specific data sample, demonstrating the stability of parameter esti-
+mation.
+5 Benchmark Analysis with PSN-IRT
+5.1 Benchmark Quality Measurements
+In this section, we delve into a detailed analysis of the benchmarks
+based on different measurements. Specifically, we leverage the 4
+item parameters (difficulty, discriminability, guessing-rate and fea-
+sibility) estimated by PSN-IRT, along with two additional metrics
+for evaluating item quality: Local Efficiency Headroom (LEH) (Va-
+nia et al. 2021) and Fisher information (Lord 1980).
+LEH score assesses the potential of a test example to evaluate
+future progress in LLMs. It is calculated as the derivative of the
+item’s Item Characteristic Curve (ICC) with respect to the highest
+observed latent ability. A high LEH score indicates that even the
+top model remains far from the saturation point of the ICC.
+Fisher information measures the amount of information an item
+provides about a model’s ability level. Items with higher Fisher
+information are more informative for estimating model abilities.
+For 4PL IRT, it is defined as:
+I(θ) = a2(P(θ)−c) 2(d−P(θ)) 2
+(d−c) 2P(θ)(1−P(θ)) ,(4)
+whereP(θ)is defined as Equation 2.
+
+## Page 5
+
+Benchmark Data Size Domain Metric Format
+ARC-C (Clark et al. 2018) 295 General EM Multiple Choice
+BBH (Suzgun et al. 2023) 6,511 General EM Mixed
+Chinese SimpleQA (He et al. 2024) 3,000 Knowledge LLM-as-a-Judge QA
+GPQA Diamond (Rein et al. 2024) 198 Science EM Multiple Choice
+GSM8K (Cobbe et al. 2021) 1,319 Math EM QA
+HellaSwag (Zellers et al. 2019) 10,042 General EM Multiple Choice
+HumanEval (Chen et al. 2021) 164 Code Pass@1 QA
+MATH (Hendrycks et al. 2021b) 5,000 Math EM QA
+MBPP (Austin et al. 2021) 500 Code Pass@1 QA
+MMLU (Hendrycks et al. 2021a) 14,042 General EM Multiple Choice
+TheoremQA (Chen et al. 2023) 800 Science EM QA
+Table 1: Benchmarks used in this paper.
+Model Parameter Method ACC F1 AUC Kendall’sτ
+IRT 4PL
+MLE 0.7211 0.8034 0.7012 0.9697
+MCMC 0.7070 0.7811 0.7278 0.9697
+VI 0.7201 0.8015 0.6940 0.9091
+VIBO 0.7188 0.8007 0.7055 0.9697
+Deep-IRT 1PL Deep Learning 0.7974 0.85160.85190.9697
+PSN-IRT 4PL Deep Learning0.7998 0.85380.84851.0000
+Table 2: Comparison of prediction accuracy and rank reliability across different methods.
+Method ACC F1 AUC Kendall
+PSN-IRT0.7998 0.8538 0.8485 1.0000
++ Embedding 0.7808 0.8413 0.8310 0.9394
++ GNN 0.7928 0.8490 0.8197 0.7273
+Table 3: Ablation study on PSN-IRT’s input representation
+and network architecture.
+Data Difficulty Discrim. Guessing Feasibility
+30% 0.9009 0.8186 0.8274 0.9025
+50% 0.7437 0.7835 0.8776 0.9330
+70% 0.9519 0.7414 0.8320 0.9442
+Table 4: Pearson correlation coefficients of item parameters
+estimated on random subsets of the data versus those esti-
+mated on the full dataset. All correlations are statistically
+significant (p <0.0001).
+5.2 Benchmark Analysis
+Based on the measurements, we provide an aggregate rank for each
+benchmark, calculated from the sum of individual ranks in Table 5,
+where a lower total rank value indicates better overall quality. Ad-
+ditionally, Figure 3 visualizes the distribution of item-level proper-
+ties across the 11 LLM benchmarks. Building on these experimen-
+tal results, our detailed analysis is presented as follows.
+Finding 1: LLM benchmarks fail to achieve simultane-
+ous excellence across multiple measurement properties.
+As shown in Table 5, the results clearly demonstrate this lack of
+simultaneous excellence. While Chinese SimpleQA achieves the
+best overall score, no benchmark performs universally well across
+the individual metrics. For instance, Chinese SimpleQA itself suf-
+fers from poor feasibility with a rank of 9. This pattern of strengths
+being offset by significant weaknesses is common across bench-
+marks, which underscores the inherent challenges and trade-offs in
+benchmark design. Moreover, the property distributions visualized
+in Figure 3 further highlight this variability and the difficulty for
+any single benchmark to achieve balanced, high quality across all
+desired measurement properties.
+Finding 2: Current LLM benchmarks exhibit an insuf-
+ficient difficulty ceiling to challenge the most advanced
+models.As shown in Table 5, difficulty is varied among dif-
+ferent benchmarks. Datasets such as TheoremQA, Chinese Sim-
+pleQA, and GPQA Diamond lead in difficulty and continue to
+challenge many LLMs. In contrast, other benchmarks including
+ARC-C, HellaSwag, and MMLU have become comparatively easy,
+where many of the items are readily solved by high-performing
+models, diminishing their utility for differentiating top-tier sys-
+tems.
+Crucially, as shown in Figure 3, even the most challenging items
+in existing benchmarks exhibit relatively low difficulty levels. For
+instance, on the IRT scale, the highest item difficulty values rarely
+exceed 1.0, while top models such as DeepSeek-V3 have estimated
+abilities well above 3.0. This indicates that even the hardest ques-
+tions are significantly below the capability level of elite LLMs,
+highlighting a lack of sufficient challenge for frontier capabilities.
+Finding 3: Generally low LEH scores across most bench-
+marks reveal widespread item saturation.While Table 5
+indicates that datasets like GPQA Diamond and TheoremQA
+achieve the highest relative ranks for average LEH, suggesting they
+offer more headroom than other benchmarks, the absolute LEH
+values in Figure 3 are often smaller than ideal. Conversely, bench-
+marks such as GSM8K and ARC-C exhibit lower average LEH
+scores. This signifies that current high-performing models are al-
+ready approaching or have reached the performance ceiling for a
+substantial portion of items within these test sets. This necessitates
+the development of new benchmark items and datasets explicitly
+designed with greater headroom as models continue to evolve.
+
+## Page 6
+
+Dataset Difficulty Discriminability Guessing Feasibility LEH Fisher Total
+Chinese SimpleQA 2 3 1 9 3 5 23
+TheoremQA 1 10 3 11 2 2 29
+MBPP 5 6 4 8 4 4 31
+MATH 4 1 2 7 7 10 31
+GPQA Diamond 3 11 6 10 1 1 32
+BBH 6 5 8 6 6 7 38
+MMLU 9 9 9 5 5 3 40
+GSM8K 8 2 5 3 11 11 40
+HumanEval 7 4 7 4 9 9 40
+HellaSwag 10 7 10 2 8 6 43
+ARC-C 11 8 11 1 10 8 49
+Table 5: Ranks of datasets based on average item-level properties estimated by PSN-IRT. Each rank is obtained by averaging
+the property over all items in a dataset and then sorting these averages; smaller rank values correspond to better performance.
+Finding 4: Outlier-high guessing-rates in many bench-
+mark items flag risks of data contamination.The
+guessing-rate reflects the chance that a model can answer a ques-
+tion correctly without actual understanding, typically by exploit-
+ing format-based cues or shortcuts. As shown in Figure 3, datasets
+like ARC-C, HellaSwag, and MMLU generally present higher
+guessing-rates, possibly due to their multiple-choice formats. No-
+tably, further inspection of the item guessing-rate parameter distri-
+butions, as depicted in Figure 3, reveals that a considerable num-
+ber of items across several benchmarks exhibit unusually high
+guessing-rates. This observation regards the potential for such
+items to indicate data contamination, namely the content or an-
+swers for these items might have been present in the models’ pre-
+training data (Zhuang et al. 2025).
+Finding 5: Widespread low-feasibility items in scientific
+benchmarks reveal flawed question design.Feasibility es-
+timates how well a question can be answered based on the infor-
+mation provided. Low feasibility often arises from underspecified
+or overly broad questions, where even a strong model cannot de-
+termine a clear answer. As shown in Figure 3, datasets like The-
+oremQA and GPQA Diamond exhibit lower feasibility, likely due
+to complex scientific contexts or vague problem descriptions. In
+contrast, ARC-C and HellaSwag have high feasibility, suggesting
+their questions are well-formed and specific. Low feasibility more
+often reflects weaknesses in annotation quality or task design, and
+such items can distort evaluation by penalizing models for failing
+to resolve ambiguities (Rodriguez et al. 2021).
+6 Efficient Benchmarking with PSN-IRT
+While the pursuit of comprehensive LLM evaluation has led to in-
+creasingly large benchmarks, sheer item volume neither guaran-
+tees quality nor comes without significant computational cost. This
+section, therefore, explores how PSN-IRT can facilitate more effi-
+cient benchmarking. We investigate whether strategically curating
+smaller, highly informative item sets can yield model comparisons
+that maintain or even surpass the accuracy and reliability of larger,
+undifferentiated collections.
+Experimental Setup.To evaluate the effectiveness of differ-
+ent item selection strategies, we design an experiment to evaluate
+the effectiveness of different item selection strategies. Our method-
+ology involves Benchmark Agreement Testing (BAT) (Perlitz et al.
+2024). We first establish a reference model ranking by aggregating
+results from two public leaderboards: Chatbot Arena (Chiang et al.
+Method w/ weak models w/o weak modelsVariance Kendall Variance Kendall
+All 0.0434 0.6444 0.0010 0.2381
+Top 400
+Random 0.0421 0.6444 0.0007 0.2381
+Clustering 0.0308 0.60000.00580.1429
+Discrim.0.18410.5556 0.0000 0.2381
+Fisher 0.00490.68890.00330.7143
+Top 1000
+Random 0.0406 0.6444 0.0009 0.2381
+Clustering 0.0166 0.64440.00410.2381
+Discrim.0.18050.6000 0.0000 0.3813
+Fisher 0.00390.68890.00300.9048
+Table 6: Variance and Kendall’sτfor various data selection
+strategies with and without weak models.
+2024) and OpenCompass Arena (Contributors 2023)11.
+Subsequently, various subsets of benchmark items are chosen
+based on different criteria. Model rankings generated using these
+subsets are then compared against the reference arena ranking us-
+ing Kendall’sτto measure agreement. Alongside agreement, we
+also consider the variance of model scores on these subsets; higher
+variance generally indicates the subset’s capacity to differentiate
+more clearly between models. The evaluations are conducted us-
+ing two distinct model groupings: one set comprising a mix of
+stronger and weaker models ("w/ weak models"), and another set
+from which weaker models are excluded ("w/o weak models"),
+to specifically assess separability among stronger contenders, with
+weak models introduced in Section 4.1.
+Results.As shown in Table 6, selecting items based on Fisher
+information consistently produces model rankings with superior
+alignment to the reference arena ranking. For instance, a carefully
+selected subset composed of just 1,000 items chosen via the Fisher
+information criterion achieves a Kendall’sτof up to 0.9048. This
+level of agreement markedly surpasses that achieved by rankings
+derived from using all available items or from similarly sized ran-
+domly selected subsets.
+In contrast, other item selection approaches are less effective for
+distinguishing strong models. For instance, selecting items based
+11These arenas are based on human evaluation and thus reflect
+human preference regarding overall model capabilities.
+
+## Page 7
+
+−2
+−1
+0
+1
+Difficulty
+Difficulty
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5Discriminability
+Discriminability
+0.0
+0.2
+0.4
+0.6
+0.8Guessing Rate
+Guessing Rate
+ARC-CBBH
+Chinese SimpleQAGPQA Diamond
+GSM8KHellaSwagHumanEvalMATHMBPPMMLUTheoremQA
+Dataset
+0.2
+0.4
+0.6
+0.8
+1.0Feasibility
+Feasibility
+ARC-CBBH
+Chinese SimpleQAGPQA Diamond
+GSM8KHellaSwagHumanEvalMATHMBPPMMLUTheoremQA
+Dataset
+0.000
+0.005
+0.010
+0.015
+0.020
+0.025LEH
+LEH
+ARC-CBBH
+Chinese SimpleQAGPQA Diamond
+GSM8KHellaSwagHumanEvalMATHMBPPMMLUTheoremQA
+Dataset
+0.000
+0.001
+0.002
+0.003Fisher Information
+Fisher Information
+Figure 3: Distribution of item-level properties across 11 LLM benchmarks.
+on discriminability yields zero score variance when weak mod-
+els are excluded, indicating it merely separates broad capability
+tiers rather than providing granularity among top-performers. Sep-
+arately, clustering items based on their success/failure vectors (Pac-
+chiardi, Cheke, and Hernández-Orallo 2024) also fails to improve
+ranking correlation, even when it increases score separability.
+7 Conclusion
+In this work, we introduce PSN-IRT, a framework that combines
+psychometrics with neural networks to provide comprehensive and
+reliable analyses of LLM benchmarks. Through extensive experi-
+ments on 12 LLMs across 11 diverse datasets, we demonstrate that
+current benchmarks often suffer from uneven measurement prop-
+erties, insufficient difficulty ceilings, item saturation, and data con-
+tamination. Moreover, we show that strategically selecting smaller,
+high-quality item sets using PSN-IRT enhances alignment with hu-
+man preference and separability among top models.
+Acknowledgments
+This work is supported by National Natural Science Foundation
+of China (62276077, 62376075, 62376076), Department of Sci-
+ence and Technology of Heilongjiang (Grant No. ZY04JD04), and
+the Key Laboratory of Computing Power Network and Information
+Security, Ministry of Education (Grant No. 2023ZD027).
+References
+Austin, J.; Odena, A.; Nye, M.; Bosma, M.; Michalewski, H.;
+Dohan, D.; Jiang, E.; Cai, C.; Terry, M.; Le, Q.; and Sutton,
+C. 2021. Program Synthesis with Large Language Models.
+arXiv:2108.07732.
+Baker, F. B.; and Kim, S.-H. 2004.Item response theory: Parame-
+ter estimation techniques. CRC press.
+Byrd, M.; and Srivastava, S. 2022. Predicting Difficulty and
+Discrimination of Natural Language Questions. In Muresan, S.;
+Nakov, P.; and Villavicencio, A., eds.,Proceedings of the 60th
+Annual Meeting of the Association for Computational Linguistics
+(Volume 2: Short Papers), 119–130. Dublin, Ireland: Association
+for Computational Linguistics.
+Chang, Y .; Wang, X.; Wang, J.; Wu, Y .; Yang, L.; Zhu, K.; Chen,
+H.; Yi, X.; Wang, C.; Wang, Y .; Ye, W.; Zhang, Y .; Chang, Y .; Yu,
+P. S.; Yang, Q.; and Xie, X. 2024. A Survey on Evaluation of Large
+Language Models.ACM Trans. Intell. Syst. Technol., 15(3).
+Chen, M.; Tworek, J.; Jun, H.; Yuan, Q.; de Oliveira Pinto, H. P.;
+Kaplan, J.; Edwards, H.; Burda, Y .; Joseph, N.; Brockman, G.;
+Ray, A.; Puri, R.; Krueger, G.; Petrov, M.; Khlaaf, H.; Sastry, G.;
+Mishkin, P.; Chan, B.; Gray, S.; Ryder, N.; Pavlov, M.; Power,
+A.; Kaiser, L.; Bavarian, M.; Winter, C.; Tillet, P.; Such, F. P.;
+Cummings, D.; Plappert, M.; Chantzis, F.; Barnes, E.; Herbert-
+V oss, A.; Guss, W. H.; Nichol, A.; Paino, A.; Tezak, N.; Tang, J.;
+Babuschkin, I.; Balaji, S.; Jain, S.; Saunders, W.; Hesse, C.; Carr,
+A. N.; Leike, J.; Achiam, J.; Misra, V .; Morikawa, E.; Radford,
+A.; Knight, M.; Brundage, M.; Murati, M.; Mayer, K.; Welinder,
+
+## Page 8
+
+P.; McGrew, B.; Amodei, D.; McCandlish, S.; Sutskever, I.; and
+Zaremba, W. 2021. Evaluating Large Language Models Trained
+on Code.
+Chen, W.; Yin, M.; Ku, M.; Lu, P.; Wan, Y .; Ma, X.; Xu, J.; Wang,
+X.; and Xia, T. 2023. TheoremQA: A Theorem-driven Question
+Answering Dataset. In Bouamor, H.; Pino, J.; and Bali, K., eds.,
+Proceedings of the 2023 Conference on Empirical Methods in Nat-
+ural Language Processing, 7889–7901. Singapore: Association for
+Computational Linguistics.
+Chiang, W.-L.; Li, Z.; Lin, Z.; Sheng, Y .; Wu, Z.; Zhang, H.; Zheng,
+L.; Zhuang, S.; Zhuang, Y .; Gonzalez, J. E.; Stoica, I.; and Xing,
+E. P. 2023. Vicuna: An Open-Source Chatbot Impressing GPT-4
+with 90%* ChatGPT Quality.
+Chiang, W.-L.; Zheng, L.; Sheng, Y .; Angelopoulos, A. N.; Li, T.;
+Li, D.; Zhu, B.; Zhang, H.; Jordan, M.; Gonzalez, J. E.; and Stoica,
+I. 2024. Chatbot Arena: An Open Platform for Evaluating LLMs
+by Human Preference. In Salakhutdinov, R.; Kolter, Z.; Heller, K.;
+Weller, A.; Oliver, N.; Scarlett, J.; and Berkenkamp, F., eds.,Pro-
+ceedings of the 41st International Conference on Machine Learn-
+ing, volume 235 ofProceedings of Machine Learning Research,
+8359–8388. PMLR.
+Clark, P.; Cowhey, I.; Etzioni, O.; Khot, T.; Sabharwal, A.;
+Schoenick, C.; and Tafjord, O. 2018. Think you have Solved
+Question Answering? Try ARC, the AI2 Reasoning Challenge.
+arXiv:1803.05457v1.
+Cobbe, K.; Kosaraju, V .; Bavarian, M.; Chen, M.; Jun, H.; Kaiser,
+L.; Plappert, M.; Tworek, J.; Hilton, J.; Nakano, R.; Hesse, C.; and
+Schulman, J. 2021. Training Verifiers to Solve Math Word Prob-
+lems.arXiv preprint arXiv:2110.14168.
+Contributors, O. 2023. OpenCompass: A Universal Evalua-
+tion Platform for Foundation Models. https://github.com/open-
+compass/opencompass.
+DeVellis, R. F. 2006. Classical test theory.Medical care, 44(11):
+S50–S59.
+Eignor, D. R. 2013. The standards for educational and psycholog-
+ical testing.
+Hastings, W. K. 1970. Monte Carlo sampling methods using
+Markov chains and their applications.
+He, Y .; Li, S.; Liu, J.; Tan, Y .; Wang, W.; Huang, H.; Bu, X.;
+Guo, H.; Hu, C.; Zheng, B.; Lin, Z.; Liu, X.; Sun, D.; Lin, S.;
+Zheng, Z.; Zhu, X.; Su, W.; and Zheng, B. 2024. Chinese Sim-
+pleQA: A Chinese Factuality Evaluation for Large Language Mod-
+els. arXiv:2411.07140.
+Hendrycks, D.; Burns, C.; Basart, S.; Zou, A.; Mazeika, M.; Song,
+D.; and Steinhardt, J. 2021a. Measuring Massive Multitask Lan-
+guage Understanding.Proceedings of the International Conference
+on Learning Representations (ICLR).
+Hendrycks, D.; Burns, C.; Kadavath, S.; Arora, A.; Basart, S.;
+Tang, E.; Song, D.; and Steinhardt, J. 2021b. Measuring Mathe-
+matical Problem Solving With the MATH Dataset.NeurIPS.
+Huang, H.; Bu, X.; Zhou, H.; Qu, Y .; Liu, J.; Yang, M.; Xu, B.; and
+Zhao, T. 2025. An Empirical Study of LLM-as-a-Judge for LLM
+Evaluation: Fine-tuned Judge Model is not a General Substitute for
+GPT-4. In Che, W.; Nabende, J.; Shutova, E.; and Pilehvar, M. T.,
+eds.,Findings of the Association for Computational Linguistics:
+ACL 2025, 5880–5895. Vienna, Austria: Association for Computa-
+tional Linguistics. ISBN 979-8-89176-256-5.
+Jiang, A. Q.; Sablayrolles, A.; Mensch, A.; Bamford, C.; Chaplot,
+D. S.; de las Casas, D.; Bressand, F.; Lengyel, G.; Lample, G.;
+Saulnier, L.; Lavaud, L. R.; Lachaux, M.-A.; Stock, P.; Scao, T. L.;
+Lavril, T.; Wang, T.; Lacroix, T.; and Sayed, W. E. 2023. Mistral
+7B. arXiv:2310.06825.
+Jordan, M. I.; Ghahramani, Z.; Jaakkola, T. S.; and Saul, L. K.
+1999. An introduction to variational methods for graphical models.
+Machine learning, 37: 183–233.
+Kipnis, A.; V oudouris, K.; Buschoff, L. M. S.; and Schulz, E. 2025.
+metabench - A Sparse Benchmark of Reasoning and Knowledge in
+Large Language Models. InThe Thirteenth International Confer-
+ence on Learning Representations.
+Li, T.; Chiang, W.-L.; Frick, E.; Dunlap, L.; Wu, T.; Zhu, B.; Gon-
+zalez, J. E.; and Stoica, I. 2024. From Crowdsourced Data to High-
+Quality Benchmarks: Arena-Hard and BenchBuilder Pipeline.
+arXiv preprint arXiv:2406.11939.
+Lord, F.; Novick, M.; and Birnbaum, A. 1968. Statistical theories
+of mental test scores.
+Lord, F. M. 1980. Applications of Item Response Theory to Prac-
+tical Testing Problems.
+Maia Polo, F.; Weber, L.; Choshen, L.; Sun, Y .; Xu, G.; and
+Yurochkin, M. 2024. tinyBenchmarks: evaluating LLMs with
+fewer examples. In Salakhutdinov, R.; Kolter, Z.; Heller, K.;
+Weller, A.; Oliver, N.; Scarlett, J.; and Berkenkamp, F., eds.,Pro-
+ceedings of the 41st International Conference on Machine Learn-
+ing, volume 235 ofProceedings of Machine Learning Research,
+34303–34326. PMLR.
+Martínez-Plumed, F.; Prudêncio, R. B.; Martínez-Usó, A.; and
+Hernández-Orallo, J. 2019. Item response theory in AI: Analysing
+machine learning classifiers at the instance level.Artificial intelli-
+gence, 271: 18–42.
+McIntosh, T. R.; Susnjak, T.; Arachchilage, N.; Liu, T.; Watters,
+P.; and Halgamuge, M. N. 2024. Inadequacies of large language
+model benchmarks in the era of generative artificial intelligence.
+arXiv preprint arXiv:2402.09880.
+Pacchiardi, L.; Cheke, L. G.; and Hernández-Orallo, J. 2024. 100
+instances is all you need: predicting the success of a new LLM on
+unseen data by testing on a few instances. arXiv:2409.03563.
+Perlitz, Y .; Gera, A.; Arviv, O.; Yehudai, A.; Bandel, E.; Shnarch,
+E.; Shmueli-Scheuer, M.; and Choshen, L. 2024. Do These LLM
+Benchmarks Agree? Fixing Benchmark Evaluation with Bench-
+Bench. arXiv:2407.13696.
+Qwen; :; Yang, A.; Yang, B.; Zhang, B.; Hui, B.; Zheng, B.; Yu, B.;
+Li, C.; Liu, D.; Huang, F.; Wei, H.; Lin, H.; Yang, J.; Tu, J.; Zhang,
+J.; Yang, J.; Yang, J.; Zhou, J.; Lin, J.; Dang, K.; Lu, K.; Bao, K.;
+Yang, K.; Yu, L.; Li, M.; Xue, M.; Zhang, P.; Zhu, Q.; Men, R.;
+Lin, R.; Li, T.; Tang, T.; Xia, T.; Ren, X.; Ren, X.; Fan, Y .; Su, Y .;
+Zhang, Y .; Wan, Y .; Liu, Y .; Cui, Z.; Zhang, Z.; and Qiu, Z. 2025.
+Qwen2.5 Technical Report. arXiv:2412.15115.
+Rein, D.; Hou, B. L.; Stickland, A. C.; Petty, J.; Pang, R. Y .; Dirani,
+J.; Michael, J.; and Bowman, S. R. 2024. GPQA: A Graduate-Level
+Google-Proof Q&A Benchmark. InFirst Conference on Language
+Modeling.
+Rodriguez, P.; Barrow, J.; Hoyle, A. M.; Lalor, J. P.; Jia, R.; and
+Boyd-Graber, J. 2021. Evaluation Examples are not Equally Infor-
+mative: How should that change NLP Leaderboards? In Zong, C.;
+Xia, F.; Li, W.; and Navigli, R., eds.,Proceedings of the 59th An-
+nual Meeting of the Association for Computational Linguistics and
+the 11th International Joint Conference on Natural Language Pro-
+cessing (Volume 1: Long Papers), 4486–4503. Online: Association
+for Computational Linguistics.
+Su, H.; Shi, W.; Kasai, J.; Wang, Y .; Hu, Y .; Ostendorf, M.; Yih,
+W.-t.; Smith, N. A.; Zettlemoyer, L.; and Yu, T. 2023. One Embed-
+der, Any Task: Instruction-Finetuned Text Embeddings. In Rogers,
+A.; Boyd-Graber, J.; and Okazaki, N., eds.,Findings of the As-
+sociation for Computational Linguistics: ACL 2023, 1102–1121.
+Toronto, Canada: Association for Computational Linguistics.
+
+## Page 9
+
+Su, Y .; Cheng, Z.; Wu, J.; Dong, Y .; Huang, Z.; Wu, L.; Chen,
+E.; Wang, S.; and Xie, F. 2022. Graph-based cognitive diagnosis
+for intelligent tutoring systems.Knowledge-Based Systems, 253:
+109547.
+Suzgun, M.; Scales, N.; Schärli, N.; Gehrmann, S.; Tay, Y .; Chung,
+H. W.; Chowdhery, A.; Le, Q.; Chi, E.; Zhou, D.; and Wei, J.
+2023. Challenging BIG-Bench Tasks and Whether Chain-of-
+Thought Can Solve Them. In Rogers, A.; Boyd-Graber, J.; and
+Okazaki, N., eds.,Findings of the Association for Computational
+Linguistics: ACL 2023, 13003–13051. Toronto, Canada: Associa-
+tion for Computational Linguistics.
+Team, G.; Mesnard, T.; Hardin, C.; Dadashi, R.; Bhupatiraju, S.;
+Pathak, S.; Sifre, L.; Rivière, M.; Kale, M. S.; Love, J.; Tafti, P.;
+Hussenot, L.; Sessa, P. G.; Chowdhery, A.; Roberts, A.; Barua,
+A.; Botev, A.; Castro-Ros, A.; Slone, A.; Héliou, A.; Tacchetti,
+A.; Bulanova, A.; Paterson, A.; Tsai, B.; Shahriari, B.; Lan, C. L.;
+Choquette-Choo, C. A.; Crepy, C.; Cer, D.; Ippolito, D.; Reid, D.;
+Buchatskaya, E.; Ni, E.; Noland, E.; Yan, G.; Tucker, G.; Mu-
+raru, G.-C.; Rozhdestvenskiy, G.; Michalewski, H.; Tenney, I.; Gr-
+ishchenko, I.; Austin, J.; Keeling, J.; Labanowski, J.; Lespiau, J.-
+B.; Stanway, J.; Brennan, J.; Chen, J.; Ferret, J.; Chiu, J.; Mao-
+Jones, J.; Lee, K.; Yu, K.; Millican, K.; Sjoesund, L. L.; Lee, L.;
+Dixon, L.; Reid, M.; Mikuła, M.; Wirth, M.; Sharman, M.; Chi-
+naev, N.; Thain, N.; Bachem, O.; Chang, O.; Wahltinez, O.; Bailey,
+P.; Michel, P.; Yotov, P.; Chaabouni, R.; Comanescu, R.; Jana, R.;
+Anil, R.; McIlroy, R.; Liu, R.; Mullins, R.; Smith, S. L.; Borgeaud,
+S.; Girgin, S.; Douglas, S.; Pandya, S.; Shakeri, S.; De, S.; Kli-
+menko, T.; Hennigan, T.; Feinberg, V .; Stokowiec, W.; hui Chen,
+Y .; Ahmed, Z.; Gong, Z.; Warkentin, T.; Peran, L.; Giang, M.;
+Farabet, C.; Vinyals, O.; Dean, J.; Kavukcuoglu, K.; Hassabis, D.;
+Ghahramani, Z.; Eck, D.; Barral, J.; Pereira, F.; Collins, E.; Joulin,
+A.; Fiedel, N.; Senter, E.; Andreev, A.; and Kenealy, K. 2024.
+Gemma: Open Models Based on Gemini Research and Technol-
+ogy. arXiv:2403.08295.
+Truong, S. T.; Tu, Y .; Liang, P.; Li, B.; and Koyejo, S. 2025.
+Reliable and Efficient Amortized Model-based Evaluation. In
+Singh, A.; Fazel, M.; Hsu, D.; Lacoste-Julien, S.; Berkenkamp,
+F.; Maharaj, T.; Wagstaff, K.; and Zhu, J., eds.,Proceedings of
+the 42nd International Conference on Machine Learning, volume
+267 ofProceedings of Machine Learning Research, 60238–60265.
+PMLR.
+Tsutsumi, E.; Kinoshita, R.; and Ueno, M. 2021. Deep item re-
+sponse theory as a novel test theory based on deep learning.Elec-
+tronics, 10(9): 1020.
+Vania, C.; Htut, P. M.; Huang, W.; Mungra, D.; Pang, R. Y .; Phang,
+J.; Liu, H.; Cho, K.; and Bowman, S. R. 2021. Comparing Test
+Sets with Item Response Theory. In Zong, C.; Xia, F.; Li, W.; and
+Navigli, R., eds.,Proceedings of the 59th Annual Meeting of the
+Association for Computational Linguistics and the 11th Interna-
+tional Joint Conference on Natural Language Processing (Volume
+1: Long Papers), 1141–1158. Online: Association for Computa-
+tional Linguistics.
+Wang, Y .; Ma, X.; Zhang, G.; Ni, Y .; Chandra, A.; Guo, S.; Ren, W.;
+Arulraj, A.; He, X.; Jiang, Z.; Li, T.; Ku, M.; Wang, K.; Zhuang, A.;
+Fan, R.; Yue, X.; and Chen, W. 2024. MMLU-Pro: A More Robust
+and Challenging Multi-Task Language Understanding Benchmark.
+In Globerson, A.; Mackey, L.; Belgrave, D.; Fan, A.; Paquet, U.;
+Tomczak, J.; and Zhang, C., eds.,Advances in Neural Information
+Processing Systems, volume 37, 95266–95290. Curran Associates,
+Inc.
+White, C.; Dooley, S.; Roberts, M.; Pal, A.; Feuer, B.; Jain, S.;
+Shwartz-Ziv, R.; Jain, N.; Saifullah, K.; Dey, S.; Shubh-Agrawal;
+Sandha, S. S.; Naidu, S. V .; Hegde, C.; LeCun, Y .; Goldstein, T.;
+Neiswanger, W.; and Goldblum, M. 2025. LiveBench: A Challeng-
+ing, Contamination-Limited LLM Benchmark. InThe Thirteenth
+International Conference on Learning Representations.
+Wu, M.; Davis, R. L.; Domingue, B. W.; Piech, C.; and Goodman,
+N. D. 2020. Variational Item Response Theory: Fast, Accurate,
+and Expressive. In Rafferty, A. N.; Whitehill, J.; Romero, C.;
+and Cavalli-Sforza, V ., eds.,Proceedings of the 13th International
+Conference on Educational Data Mining, EDM 2020, Fully virtual
+conference, July 10-13, 2020. International Educational Data Min-
+ing Society. ISBN 978-1-7336736-1-7.
+Ye, H.; Jin, J.; Xie, Y .; Zhang, X.; and Song, G. 2025. Large lan-
+guage model psychometrics: A systematic review of evaluation,
+validation, and enhancement.arXiv preprint arXiv:2505.08245.
+Zellers, R.; Holtzman, A.; Bisk, Y .; Farhadi, A.; and Choi, Y .
+2019. HellaSwag: Can a Machine Really Finish Your Sentence?
+In Korhonen, A.; Traum, D.; and Màrquez, L., eds.,Proceedings
+of the 57th Annual Meeting of the Association for Computational
+Linguistics, 4791–4800. Florence, Italy: Association for Computa-
+tional Linguistics.
+Zhou, H.; Huang, H.; Long, Y .; Xu, B.; Zhu, C.; Cao, H.; Yang, M.;
+and Zhao, T. 2024. Mitigating the Bias of Large Language Model
+Evaluation. In Maosong, S.; Jiye, L.; Xianpei, H.; Zhiyuan, L.; and
+Yulan, H., eds.,Proceedings of the 23rd Chinese National Confer-
+ence on Computational Linguistics (Volume 1: Main Conference),
+1310–1319. Taiyuan, China: Chinese Information Processing So-
+ciety of China.
+Zhou, L.; Pacchiardi, L.; Martínez-Plumed, F.; Collins, K. M.;
+Moros-Daval, Y .; Zhang, S.; Zhao, Q.; Huang, Y .; Sun, L.; Prunty,
+J. E.; et al. 2025. General scales unlock ai evaluation with explana-
+tory and predictive power.arXiv preprint arXiv:2503.06378.
+Zhuang, Y .; Liu, Q.; Pardos, Z.; Kyllonen, P. C.; Zu, J.; Huang,
+Z.; Wang, S.; and Chen, E. 2025. Position: AI Evaluation Should
+Learn from How We Test Humans. In Singh, A.; Fazel, M.; Hsu,
+D.; Lacoste-Julien, S.; Berkenkamp, F.; Maharaj, T.; Wagstaff, K.;
+and Zhu, J., eds.,Proceedings of the 42nd International Confer-
+ence on Machine Learning, volume 267 ofProceedings of Machine
+Learning Research, 82483–82508. PMLR.
+
+## Page 10
+
+A Implementation Details
+A.1 Estimation Ability of PSN-IRT
+To evaluate the estimation ability of PSN-IRT against baselines, we first construct a unified response matrix by aggregating item-level results
+across all models and benchmarks. We then split these model-item interactions into training (60%), validation (20%), and test sets (20%). The
+model is trained on the training set using the Adam optimizer with a learning rate of 0.003 and a weight decay of 0.0001, and a batch size of
+512. To ensure robust model selection and prevent overfitting, we employ an early stopping strategy with a patience of 5 epochs, monitored
+based on the F1 score on the validation set.
+For the subsequent benchmark analysis presented in Section 5, where the goal is to obtain the most stable parameter estimates for all
+items, we train the PSN-IRT model on the entire unified dataset. In this phase, the model is trained for a fixed 30 epochs using the same
+hyperparameters. All training is conducted on a single NVIDIA A800-80G GPU.
+A.2 Ablation Study
+This section provides additional implementation details for the ablation study variants mentioned in Section 4.3.
+Semantic Embedding Variant.To explore the utility of item content, we substitute one-hot encoded item identifiers with dense se-
+mantic embeddings. These embeddings are generated for the text of each benchmark item using the pre-trained Instructor-XL 12. They then
+serve as the direct input to the item network, replacing the one-hot encoding pathway while the rest of the PSN-IRT architecture remained
+unchanged.
+However, these variants fail to yield significant improvements. We will explore improved input representations and model architectures as
+future work to enhance model robustness.
+Graph Neural Network (GNN) Variant.To investigate the role of network architecture, we implemented a custom GNN-based
+encoder. This encoder updates a model’s initial embedding by aggregating information from all interactions in the training graph. For each
+interaction between a modelsand an itemqwith a binary outcomerel∈ {0,1}, a cognitive degreel s,q is first computed:
+ls,q =Linear gate([eq,W rel ·rel])(5)
+wheree q is the item’s initial embedding,W rel is a trainable weight matrix that projects the scalar responserelinto the embedding space,
+and[·,·]denotes concatenation. This combined vector is then processed by a single linear layer (Linear gate) to form the cognitive degree.
+Subsequently, a cognitive statec s,q is formed through an element-wise product:
+cs,q =e q ⊙l s,q (6)
+The updated embedding for models, denotede ′s, is obtained by performing an attention-weighted aggregation of the cognitive states from
+all itemsN s it has interacted with:
+e′s =e s + X
+qi∈Ns
+αs,qi ·c s,qi (7)
+where the attention weightsα s,qi are calculated via a softmax over scores. These scores are derived by applying a linear layer and a
+LeakyReLU activation to a concatenation of the model’s embeddinge s and each cognitive statec s,qi. A symmetric process is used to
+update item embeddings.
+However, both variants fail to yield performance gains. We leave the exploration of more specialized architectures and feature representa-
+tions as future work.
+B Additional Analysis
+B.1 Performance Comparison across IRT Parmaters
+To investigate the impact of model configurations, we evaluate PSN-IRT and baseline methods across 1PL to 4PL parameters, as shown
+in Table 7. Among these models, the Two-Parameter Logistic (2PL) model builds upon the 1PL by incorporating an item discriminability
+parametera:
+P(X= 1|θ, a, b) = 11 +e−a(θ−b) (8)
+Subsequently, the Three-Parameter Logistic (3PL) model extends the 2PL by adding a guessing-rate parameterc:
+P(X= 1|θ, a, b, c) =c+ (1−c)· 11 +e−a(θ−b) (9)
+The results demonstrate that performance exhibits no consistent pattern with increasing parameter complexity. While PSN-IRT with 4PL
+achieves the highest performance, simpler models occasionally outperform more complex ones in traditional IRT methods.
+B.2 Detailed Benchmark Statistics
+We provide the full list of average item-level property estimates for each dataset in Table 8. These values are computed as the mean of all
+item parameters within a benchmark and include difficulty, discriminability, guessing-rate, feasibility, LEH score, and Fisher information.
+The table allows for fine-grained comparisons between benchmarks beyond their aggregated rankings.
+12https://huggingface.co/hkunlp/instructor-xl
+
+## Page 11
+
+Model Method Parameter ACC F1 AUC Kendall’sτ
+IRT
+MLE
+1PL 0.7219 0.8035 0.6970 1.0000
+2PL 0.7172 0.7998 0.6963 0.9091
+3PL 0.7218 0.8031 0.7057 0.9697
+4PL 0.7211 0.8034 0.7012 0.9697
+MCMC
+1PL 0.7168 0.8011 0.7268 0.9697
+2PL 0.7232 0.8130 0.7301 0.9697
+3PL 0.7172 0.8081 0.7297 1.0000
+4PL 0.7070 0.7811 0.7278 0.9697
+VI
+1PL 0.7209 0.8024 0.6822 0.9697
+2PL 0.7198 0.8012 0.6938 1.0000
+3PL 0.7189 0.8011 0.6956 0.9697
+4PL 0.7201 0.8015 0.6940 0.9091
+VIBO
+1PL 0.7007 0.7801 0.6901 0.9697
+2PL 0.7301 0.8048 0.6987 0.8788
+3PL 0.7172 0.7993 0.7048 0.9091
+4PL 0.7188 0.8007 0.7055 0.9697
+Deep-IRT Deep Learning 1PL 0.7974 0.85160.85190.9697
+PSN-IRT Deep Learning
+1PL 0.7948 0.8497 0.8473 0.9091
+2PL 0.7560 0.8266 0.8259 0.9697
+3PL 0.7965 0.85100.85100.8788
+4PL0.7998 0.85380.84851.0000
+Table 7: Comparison of prediction accuracy and rank reliability across different methods.
+Dataset Difficulty Discriminability Guessing Feasibility LEH Fisher
+ARC-C -1.1637 1.2822 0.2621 0.9481 0.0041 0.0005
+BBH -0.6033 1.3845 0.1657 0.8747 0.0057 0.0006
+Chinese SimpleQA 0.2656 1.4474 0.0609 0.7088 0.0089 0.0006
+GPQA Diamond 0.1902 0.8598 0.1518 0.6437 0.0142 0.0014
+GSM8K -0.7899 1.5255 0.1491 0.9167 0.0038 0.0004
+HellaSwag -1.0353 1.2920 0.2449 0.9304 0.0047 0.0006
+HumanEval -0.6351 1.4459 0.1565 0.8957 0.0046 0.0005
+MATH -0.2396 1.5793 0.0673 0.8290 0.0054 0.0004
+MBPP -0.3456 1.3625 0.1345 0.8221 0.0071 0.0007
+MMLU -0.8383 1.1968 0.2381 0.8921 0.0067 0.0008
+TheoremQA 0.6548 1.0656 0.0888 0.5012 0.0145 0.0013
+Table 8: Average item-level properties across datasets. Each value represents the mean of the corresponding metric over all
+benchmark items.
+B.3 Relationship Between Item Difficulty and Discriminability
+Our analysis reveals a notable relationship between item difficulty and discriminability. As illustrated by the scatter plots in Figure 4, item
+discriminability tends to be lower when item difficulty reaches extreme levels—that is, when items are either very easy or very hard. Con-
+sequently, datasets that feature a more balanced distribution of difficulty often exhibit higher overall discriminability, enabling them to more
+effectively distinguish between models of varying capabilities.
+This pattern is also reflected in the dataset-level averages presented in Table 5 in the main text. For instance, benchmarks such as MATH
+and GSM8K, which contain a range of difficulties, achieve high average discriminability. Conversely, datasets like GPQA Diamond and
+TheoremQA, which are characterized by a concentration of very difficult items, exhibit the lowest average discriminability. This suggests
+that their capacity for precise model differentiation is reduced, in part, due to this difficulty-discriminability trade-off. These observations
+underscore the importance of balancing difficulty when designing test items to ensure a benchmark is not only challenging but also highly
+discriminative.
+B.4 Case Study
+As depicted in Figure 5, these parameters capture a wide range of item behaviors:
+• For difficulty, the figure contrasts a complex coding task with a simple factual recall question, showcasing items at opposite ends of the
+challenge spectrum.
+• For discriminability, the examples include a quantitative reasoning problem with a high value, indicating strong differentiating power, and
+a common-sense inference task with a low value, suggesting limited ability to distinguish between models.
+
+## Page 12
+
+Figure 4: Scatter plots showing the relationship between item difficulty and discriminability across 11 benchmarks. Each plot
+highlights how difficulty affects discriminability within a dataset.
+• For guessing-rate, an alphabetical sorting task exhibits a very low estimated parameter, offering little opportunity for chance success. In
+contrast, a multiple-choice question concerning scientific studies shows an exceptionally high guessing parameter. This item’s content is
+publicly accessible online, suggesting an associated risk of data contamination.
+• For feasibility, a logical arrangement task shows high feasibility, implying clarity and high attainability for proficient models, while a
+domain-specific question exhibits low feasibility, suggesting potential item ambiguities.
+
+## Page 13
+
+Write a function to count bidirectional tuple pairs. Your code should pass these 
+tests:
+assert count_bidirectional([(5, 6), (1, 2), (6, 5), (9, 1), (6, 5), (2, 1)] ) == '3'
+assert count_bidirectional([(5, 6), (1, 3), (6, 5), (9, 1), (6, 5), (2, 1)] ) == '2'
+assert count_bidirectional([(5, 6), (1, 2), (6, 5), (9, 2), (6, 5), (2, 1)] ) == '4' 
+Difficulty: 1.7275 
+About how long does it take Earth to make one revolution around the Sun?
+A. a day B. a week C. a month D. a year
+Difficulty: -2.1533
+In 1992, a scoop of gelato could be purchased in Italy for 1200 lire. The same 
+gelato would have cost $\$1.50$ in the U.S. At the equivalent exchange rate 
+between the lire and the dollar, how many dollars would be equivalent to 
+1,000,000 lire?
+A girl is talking outside in her yard. She
+A) drops a toy into a lake.
+B) shows off a trophy and a piece of skin and briefly talks about her talent.
+C) engages in several different moves.
+D) takes a squeegee and cleans off leaves on her lawn.
+Discriminability: 2.6234 Discriminability: 0.0043
+Sort the following words alphabetically: List: them abdominal address 
+fomalhaut pay optimal hanoverian yang berry tattoo islamabad swathe jordan 
+bounty stearic stigmata involve effusive tornado
+Wilder Penfield's studies suggest that some long-lost memories can be elicited 
+through electrical stimulation of the brain. This suggests that forgetting may be 
+a matter of
+A. displacement B. gradual decay
+C. retrieval failure D. failure to encode the memories
+Guessing Rate: 0.0033 Guessing Rate: 0.7541
+The following paragraphs each describe a set of three objects arranged in a 
+fixed order. The statements are logically consistent within each paragraph. In a 
+golf tournament, there were three golfers: Mel, Ada, and Ana. Mel finished last. 
+Ana finished second.
+(A) Mel finished last (B) Ada finished last  (C) Ana finished last
+在共晶系统中，当共晶混合物被加热达到共晶温度时会发生什么反应？
+Feasibility: 0.9967 Feasibility: 0.1794
+Figure 5: Examples of benchmark items exhibiting high and low estimated values for key psychometric parameters, as deter-
+mined by PSN-IRT. Each pair shows an item with a high parameter value alongside one with a low value for the specified
+characteristic.

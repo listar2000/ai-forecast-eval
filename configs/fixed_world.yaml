@@ -1,0 +1,25 @@
+seed: 1234
+replicates: 200
+mode: fixed_world
+simulation:
+  events:
+    generator: uniform
+    count: 1000
+    probability_range: [0.2, 0.8]
+  forecasters:
+    generator: additive_error
+    epsilons: [0.0, 0.025, 0.05, 0.1, 0.15]
+    sign_policy: independent_symmetric
+  participation:
+    mechanism: complete
+  market:
+    enabled: true
+    epsilon: 0.1
+  truth:
+    target: mean_squared_probability_error
+    reference_weights: uniform
+methods:
+  - name: mean_brier
+  - name: peer_brier
+  - name: market_relative_brier
+metrics: [pairwise_accuracy, kendall_tau_b, best_selection, selection_regret]
